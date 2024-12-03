@@ -43,7 +43,6 @@ func day2() {
 	data := ParseInputData("./data/d2.txt")
 
 	safeCount := 0
-	safeCountPart2 := 0
 rowLoop:
 	for _, v := range data {
 		fields := strings.Fields(v)
@@ -51,10 +50,7 @@ rowLoop:
 		for i, v := range fields {
 			intFields[i], _ = strconv.Atoi(v)
 		}
-		//dampener := 0
-		isAscRow := "NONE"
-		//fmt.Println()
-		//countLoop:
+		isAscRow := 0
 		for index, current := range intFields {
 			if index+1 >= len(intFields) {
 				continue
@@ -63,83 +59,12 @@ rowLoop:
 
 			next := intFields[index+1]
 			isValid, isAscPair := IsValidAndOrderedAsc(current, next)
-			if isAscRow == "NONE" {
+			if isAscRow == 0 {
 				isAscRow = isAscPair
 			}
 			if !isValid || isAscRow != isAscPair {
-				/* 				if index-1 >= 0 {
-				   					isValidLeftOfIndex, _ := IsValidAndOrderedAsc(intFields[index-1], intFields[index])
-				   					if !isValidLeftOfIndex && dampener == 0 {
-				   						dampener = 1
-				   						intFields = append(intFields[:index], intFields[index+1:]...)
-				   						fmt.Println("Bad level (isValidLeftOfIndex)", fields)
-				   						fmt.Println("Bad level (isValidLeftOfIndex)", intFields)
-				   						goto countLoop
-				   					}
-				   				}
-				   				if index+1 <= len(intFields) {
-				   					isValidRightOfIndex, _ := IsValidAndOrderedAsc(intFields[index], intFields[index+1])
-				   					if !isValidRightOfIndex && dampener == 0 {
-				   						dampener = 1
-				   						intFields = append(intFields[:index+1], intFields[index+2:]...)
-				   						fmt.Println("Bad level (isValidRightOfIndex)", fields)
-				   						fmt.Println("Bad level (isValidRightOfIndex)", intFields)
-				   						goto countLoop
-				   					}
-				   				} */
-
 				continue rowLoop
 			}
-			// check if next value not either Min or Max so that the row is neither
-			// ordered ASC or DESC
-			/* 			reversed := slices.Clone(intFields[0 : index+2])
-			   			slices.Reverse(reversed)
-			   			if !slices.IsSorted(intFields[0:index+2]) && !slices.IsSorted(reversed) {
-			   				if dampener != 0 {
-			   					// Exit checking row values since more than 1 invalid levels
-			   					fmt.Println("Bad level (order)", fields)
-			   					fmt.Println("Bad level (order)", intFields)
-			   					continue rowLoop
-			   				}
-			   				dampener = 1
-			   				fmt.Println("removed (order) ", intFields[index+1])
-			   				intFields = append(intFields[:index+1], intFields[index+2:]...)
-			   				goto countLoop
-			   			} */
-
-			/* 			if v2-next > 3 || v2-next < -3 || v2-next == 0 {
-			   				if dampener != 0 {
-			   										fmt.Println()
-			   					   					fmt.Println(v2)
-			   					   					fmt.Println(next)
-			   					fmt.Println("Bad level (large)", fields)
-			   					fmt.Println("Bad level (large)", intFields)
-			   					continue rowLoop
-			   				}
-			   				dampener = 1
-			   				fmt.Println("removed (large) ", intFields[index])
-			   				intFields = append(intFields[:index+1], intFields[index+2:]...)
-			   				goto countLoop
-			   			}
-			   						fmt.Println("Next ", next)
-			   			   			fmt.Println("index ", index)
-			   			   			fmt.Println("Max ", next != slices.Max(intFields[0:index+2]))
-			   			   			fmt.Println("Min ", next != slices.Min(intFields[0:index+2]))
-
-			   			if next != slices.Max(intFields[0:index+2]) && next != slices.Min(intFields[0:index+2]) {
-			   				if dampener != 0 {
-			   					fmt.Println()
-			   					   fmt.Println(v2)
-			   					   fmt.Println(next)
-			   					fmt.Println("Bad level (order)", fields)
-			   					fmt.Println("Bad level (order)", intFields)
-			   					continue rowLoop
-			   				}
-			   				dampener = 1
-			   				fmt.Println("removed (order) ", intFields[index])
-			   				intFields = append(intFields[:index], intFields[index+1:]...)
-			   				goto countLoop
-			   			} */
 		}
 
 		if slices.IsSorted(intFields) {
@@ -152,18 +77,90 @@ rowLoop:
 		}
 	}
 	fmt.Printf("Day 2 Part 1: %d\n", safeCount)
-	fmt.Printf("Day 2 Part 2: %d\n", safeCountPart2)
 
 }
 
-func IsValidAndOrderedAsc(left int, right int) (bool, string) {
+func day2Part2() {
+	data := ParseInputData("./data/d2.txt")
+
+	safeCount := 0
+	for _, v := range data {
+		fields := strings.Fields(v)
+		intFields := make([]int, len(fields))
+		for i, v := range fields {
+			intFields[i], _ = strconv.Atoi(v)
+		}
+		_, isValid := isDataValid(intFields)
+		if isValid {
+			safeCount++
+			continue
+		}
+		for toRemoveIndex := range intFields {
+			firstCpy := slices.Clone(intFields)
+			firstRemoved := append(firstCpy[:toRemoveIndex], firstCpy[toRemoveIndex+1:]...)
+			_, isValid = isDataValid(firstRemoved)
+			if isValid {
+				safeCount++
+				break
+			}
+		}
+	}
+	fmt.Printf("Day 2 Part 2: %d\n", safeCount)
+}
+
+func isDataValid(ints []int) (int, bool) {
+	order := make([]int, 0)
+	for index, current := range ints {
+		if index+1 >= len(ints) {
+			order = append(order, current)
+			toReverse := slices.Clone(order)
+			slices.Reverse(toReverse)
+			if slices.IsSorted(ints) {
+				continue
+			}
+			if slices.IsSorted(toReverse) {
+				continue
+			}
+			return index, false
+		}
+		next := ints[index+1]
+		isValid, _ := IsValidAndOrderedAsc(current, next)
+		if !isValid {
+			return index, false
+		}
+
+		order = append(order, current)
+		toReverse := slices.Clone(order)
+		slices.Reverse(toReverse)
+		if slices.IsSorted(order) {
+			continue
+		}
+		if slices.IsSorted(toReverse) {
+			continue
+		}
+		newOrder := slices.Clone(order)
+		newOrder = newOrder[:index]
+		if !slices.IsSorted(newOrder) {
+			return index - 1, false
+		}
+		newtoReverse := slices.Clone(toReverse)
+		newtoReverse = newtoReverse[1:]
+		if !slices.IsSorted(newtoReverse) {
+			return index - 1, false
+		}
+		return index, false
+	}
+	return len(ints), true
+}
+
+func IsValidAndOrderedAsc(left int, right int) (bool, int) {
 	if left-right > 3 || left-right < -3 || left-right == 0 {
-		return false, "DESC"
+		return false, -1
 	}
 	if left < right {
-		return true, "ASC"
+		return true, 1
 	}
-	return true, "DESC"
+	return true, -1
 }
 
 func CountValues(list []float64, target float64) float64 {

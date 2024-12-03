@@ -8,4 +8,5 @@ func TestDay1(t *testing.T) {
 
 func TestDay2(t *testing.T) {
 	day2()
+	day2Part2()
 }
