@@ -55,7 +55,6 @@ rowLoop:
 			if index+1 >= len(intFields) {
 				continue
 			}
-			//fmt.Println(intFields[0 : index+2])
 
 			next := intFields[index+1]
 			isValid, isAscPair := IsValidAndOrderedAsc(current, next)
@@ -90,7 +89,7 @@ func day2Part2() {
 		for i, v := range fields {
 			intFields[i], _ = strconv.Atoi(v)
 		}
-		_, isValid := isDataValid(intFields)
+		isValid := isDataValid(intFields)
 		if isValid {
 			safeCount++
 			continue
@@ -98,7 +97,7 @@ func day2Part2() {
 		for toRemoveIndex := range intFields {
 			firstCpy := slices.Clone(intFields)
 			firstRemoved := append(firstCpy[:toRemoveIndex], firstCpy[toRemoveIndex+1:]...)
-			_, isValid = isDataValid(firstRemoved)
+			isValid = isDataValid(firstRemoved)
 			if isValid {
 				safeCount++
 				break
@@ -108,49 +107,33 @@ func day2Part2() {
 	fmt.Printf("Day 2 Part 2: %d\n", safeCount)
 }
 
-func isDataValid(ints []int) (int, bool) {
+func isDataValid(ints []int) bool {
 	order := make([]int, 0)
 	for index, current := range ints {
 		if index+1 >= len(ints) {
 			order = append(order, current)
 			toReverse := slices.Clone(order)
 			slices.Reverse(toReverse)
-			if slices.IsSorted(ints) {
+			if slices.IsSorted(order) || slices.IsSorted(toReverse) {
 				continue
 			}
-			if slices.IsSorted(toReverse) {
-				continue
-			}
-			return index, false
+			return false
 		}
 		next := ints[index+1]
 		isValid, _ := IsValidAndOrderedAsc(current, next)
 		if !isValid {
-			return index, false
+			return false
 		}
 
 		order = append(order, current)
 		toReverse := slices.Clone(order)
 		slices.Reverse(toReverse)
-		if slices.IsSorted(order) {
+		if slices.IsSorted(order) || slices.IsSorted(toReverse) {
 			continue
 		}
-		if slices.IsSorted(toReverse) {
-			continue
-		}
-		newOrder := slices.Clone(order)
-		newOrder = newOrder[:index]
-		if !slices.IsSorted(newOrder) {
-			return index - 1, false
-		}
-		newtoReverse := slices.Clone(toReverse)
-		newtoReverse = newtoReverse[1:]
-		if !slices.IsSorted(newtoReverse) {
-			return index - 1, false
-		}
-		return index, false
+		return false
 	}
-	return len(ints), true
+	return true
 }
 
 func IsValidAndOrderedAsc(left int, right int) (bool, int) {
