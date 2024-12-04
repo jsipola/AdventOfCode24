@@ -76,7 +76,6 @@ rowLoop:
 		}
 	}
 	fmt.Printf("Day 2 Part 1: %d\n", safeCount)
-
 }
 
 func day2Part2() {
@@ -105,6 +104,131 @@ func day2Part2() {
 		}
 	}
 	fmt.Printf("Day 2 Part 2: %d\n", safeCount)
+}
+
+func day3(isPart2 bool) {
+	data := ParseInputData("data/d3.txt")
+
+	f := func(c rune) bool {
+		return c == ')'
+	}
+	sums := 0
+	enabled := true
+	for _, v := range data {
+		strs := strings.Split(v, "mul(")
+		for index, v := range strs {
+			v1 := strings.FieldsFunc(v, f)
+			if len(v1) == 0 {
+				continue
+			}
+			if index > 0 && isPart2 {
+				dontIndex := strings.Index(strs[index-1], "don't()")
+				doIndex := strings.Index(strs[index-1], "do()")
+				if doIndex > dontIndex {
+					enabled = true
+				}
+				if dontIndex > doIndex {
+					enabled = false
+				}
+			}
+
+			nums := strings.Split(v1[0], ",")
+			if len(nums) != 2 {
+				continue
+			}
+			mult1, err := strconv.Atoi(nums[0])
+			if err != nil {
+				continue
+			}
+			mult2, err := strconv.Atoi(nums[1])
+			if err != nil {
+				continue
+			}
+			if enabled {
+				sums += mult1 * mult2
+			}
+		}
+	}
+	fmt.Printf("Day3 part ")
+	if isPart2 {
+		fmt.Print("2")
+	} else {
+		fmt.Print("1")
+	}
+	fmt.Printf(" %d\n", sums)
+}
+
+func day4() {
+	data := ParseInputData("data/d4.txt")
+
+	directions1 := map[string][]int{"NW": {-1, -1}, "N": {-1, 0}, "NE": {-1, 1}, "E": {0, 1}, "SE": {1, 1}, "S": {1, 0}, "SW": {1, -1}, "W": {0, -1}}
+	directions2 := map[string][]int{"SE": {1, 1}, "SW": {1, -1}}
+	sums := 0
+	sums2 := 0
+	type Loc struct {
+		x int
+		y int
+	}
+	foundXs := make(map[Loc][]string, 0)
+	for yIndex, v := range data {
+		for xIndex, char := range v {
+			if char == 'X' {
+				for _, direction := range directions1 {
+					yDir := direction[0]
+					xDir := direction[1]
+					str := make([]string, 0)
+					for i := 0; i < 4; i++ {
+						yloc := yIndex + (yDir * i)
+						xloc := xIndex + (xDir * i)
+						if yloc < 0 || yloc >= len(data) || xloc < 0 || xloc >= len(v) {
+							break
+						}
+						str = append(str, string(data[yloc][xloc]))
+					}
+					if len(str) != 4 {
+						continue
+					}
+					if strings.Join(str, "") == "XMAS" {
+						sums++
+					}
+				}
+			}
+			// Part2
+			if char == 'M' || char == 'S' {
+				for orientation, direction := range directions2 {
+					yDir := direction[0]
+					xDir := direction[1]
+					str := make([]string, 0)
+					for i := 0; i < 3; i++ {
+						yloc := yIndex + (yDir * i)
+						xloc := xIndex + (xDir * i)
+						if yloc < 0 || yloc >= len(data) || xloc < 0 || xloc >= len(v) {
+							break
+						}
+						str = append(str, string(data[yloc][xloc]))
+					}
+					if len(str) != 3 {
+						continue
+					}
+					joinedStr := strings.Join(str, "")
+					if joinedStr == "MAS" || joinedStr == "SAM" {
+						// Find the A location
+						Aloc := Loc{x: xIndex + xDir, y: yIndex + yDir}
+						foundXs[Aloc] = append(foundXs[Aloc], orientation)
+					}
+				}
+			}
+		}
+	}
+
+	fmt.Println("Day 4 Part 1: ", sums)
+	for _, v := range foundXs {
+		// Check A location has two directions
+		if len(v) == 2 {
+			sums2++
+		}
+	}
+	fmt.Println("Day 4 Part 2: ", sums2)
 }
 
 func isDataValid(ints []int) bool {
