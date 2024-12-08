@@ -504,56 +504,14 @@ func day6Part2() {
 func day7() {
 	data := ParseInputData("data/d7.txt")
 
-	type row struct {
-		target int
-		nums   []int
-	}
-	rows := make([]row, len(data))
+	sumsPart2 := 0
 
 	for index, v := range data {
-		strs := strings.Split(v, ":")
-		sum, _ := strconv.Atoi(strs[0])
-		strs = strings.Fields(strs[1])
-		ints := make([]int, len(strs))
-		for index, v1 := range strs {
-			ints[index], _ = strconv.Atoi(string(v1))
-		}
-		rows[index] = row{target: sum, nums: ints}
+
 	}
 
-	sums := 0
-	for _, row := range rows {
-		if isValid(row.target, row.nums, false) {
-			sums += row.target
-		}
-	}
-
-	allsums := 0
-	for _, row := range rows {
-		if isValid(row.target, row.nums, true) {
-			allsums += row.target
-		}
-	}
-
-	fmt.Println("Day 6 Part 1:    ", sums)
-	fmt.Println("Day 6 Part 2:    ", allsums)
-}
-
-func isValid(targetSum int, nums []int, isPart2 bool) bool {
-	if len(nums) == 1 {
-		return nums[0] == targetSum
-	} else if nums[0] > targetSum {
-		return false
-	}
-
-	if isValid(targetSum, append([]int{nums[0] + nums[1]}, nums[2:]...), isPart2) {
-		return true
-	}
-	if isValid(targetSum, append([]int{nums[0] * nums[1]}, nums[2:]...), isPart2) {
-		return true
-	}
-	concat, _ := strconv.Atoi(fmt.Sprintf("%d%d", nums[0], nums[1]))
-	return isValid(targetSum, append([]int{concat}, nums[2:]...), isPart2) && isPart2
+	fmt.Println("Day 6 Part 1: ", len(LocMap2))
+	fmt.Println("Day 6 Part 2: ", sumsPart2)
 }
 
 func traversePath(data []string, start Loc, startPath Path, previousLoc []Loc) (bool, []Loc) {

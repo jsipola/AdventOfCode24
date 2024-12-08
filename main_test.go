@@ -28,3 +28,8 @@ func TestDay6(t *testing.T) {
 	day6()
 	day6Part2()
 }
+
+func TestDay7(t *testing.T) {
+	day7()
+	//day73()
+}
