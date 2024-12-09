@@ -409,8 +409,8 @@ func day6Part2() {
 	dire := string(data[startY][startX])
 	startpath := directionMap[dire]
 	_, paths := traversePath(data, Loc{x: startX, y: startY}, startpath, []Loc{})
-	fmt.Println(startpath)
-	fmt.Println(paths)
+	//fmt.Println(startpath)
+	//fmt.Println(paths)
 
 	for _, v := range paths {
 		// Remove direction incase been to same place more than once
@@ -427,7 +427,7 @@ func day6Part2() {
 			LocMap[v] = 1
 		}
 		// Part 2
-		fmt.Println("Start travelsar for sub blockers", v.x, v.y)
+		//fmt.Println("Start travelsar for sub blockers", v.x, v.y)
 		//fmt.Println(locs2[0].x, locs2[0].y)
 		a, _ := traversePath(data, v, startpath, paths[:index])
 		//fmt.Println(a)
@@ -561,22 +561,103 @@ func day8() {
 		}
 	}
 
-	uniqueLocs := make(map[antenna]int, 0)
-	parsed := slices.DeleteFunc(allAntennas, func(item antenna) bool {
-		if item.y >= len(data) || item.y < 0 {
+	uniqueAntenna := make(map[antenna]int, 0)
+	filtered := deleteOoBAntenna(allAntennas, len(data), len(data[0]))
+	for _, v := range filtered {
+		uniqueAntenna[v] = 1
+	}
+
+	fmt.Println("Day 8 Part 1:    ", len(uniqueAntenna))
+	fmt.Println("Day 8 Part 2:    ", allsums)
+}
+
+func day9() {
+	data := ParseInputData("data/d9.txt")
+
+	allsums := 0
+	block := ""
+	blockSlices := make([]string, 0)
+	input := strings.Split(data[0], "")
+	for index, v := range input {
+		num, _ := strconv.Atoi(v)
+		if index%2 == 1 {
+			blockSlices = append(blockSlices, slices.Repeat([]string{"."}, num)...)
+
+			block += strings.Join(slices.Repeat([]string{"."}, num), "")
+		} else {
+			blockSlices = append(blockSlices, slices.Repeat([]string{strconv.Itoa(index / 2)}, num)...)
+			block += strings.Join(slices.Repeat([]string{strconv.Itoa(index / 2)}, num), "")
+		}
+	}
+
+	//fmt.Println(blockSlices)
+	//blocks := strings.Split(block, "")
+	reversed := slices.Clone(blockSlices)
+	slices.Reverse(reversed)
+	//var final string
+	final := make([]string, 0)
+	filtered := slices.DeleteFunc(reversed, func(s string) bool {
+		return s == "."
+	})
+	moveblocks(blockSlices, filtered, &final)
+	//strs := strings.Split(final, "")
+	//fmt.Println(final)
+	for index, v := range final {
+		val, _ := strconv.Atoi(v)
+		allsums += index * val
+		//fmt.Printf("%d * %d\n", index, val)
+	}
+	fmt.Println("Day 8 Part 1:    ", allsums)
+	fmt.Println("Day 8 Part 2:    ", allsums)
+}
+
+func moveblocks(block, reversed []string, final *[]string) {
+	/* 	emptySlot := slices.IndexFunc(block, func(str string) bool {
+		return str == "."
+	}) */
+	/* 	fmt.Println("b", block)
+	   	fmt.Println("r", reversed)
+	   	fmt.Println(*final) */
+	emptySlot := FindEmptyFunc(block)
+	if emptySlot == -1 || len(block) == 1 {
+		if block[0] != "." {
+			*final = append(*final, block[0])
+			//*final += block[0]
+		}
+		return
+	}
+	if emptySlot > 0 {
+		*final = append(*final, block[0:emptySlot]...)
+		//*final += strings.Join(block[0:emptySlot], "")
+		moveblocks(block[emptySlot:], reversed, final)
+		return
+	}
+	*final = append(*final, reversed[0])
+	//*final += reversed[0]
+	moveblocks(block[emptySlot+1:len(block)-1], reversed[1:], final)
+}
+
+func FindEmptyFunc(strs []string) int {
+	return slices.IndexFunc(strs, func(str string) bool {
+		return str == "."
+	})
+}
+func FindNotEmptyFunc(strs []string) int {
+	return slices.IndexFunc(strs, func(str string) bool {
+		return str != "."
+	})
+}
+
+func deleteOoBAntenna(current []antenna, height, length int) []antenna {
+	return slices.DeleteFunc(current, func(item antenna) bool {
+		if item.y >= height || item.y < 0 {
 			return true
 		}
-		if item.x >= len(data[0]) || item.x < 0 {
+		if item.x >= length || item.x < 0 {
 			return true
 		}
 		return false
 	})
-	for _, v := range parsed {
-		uniqueLocs[v] = 1
-	}
-
-	fmt.Println("Day 8 Part 1:    ", len(uniqueLocs))
-	fmt.Println("Day 8 Part 2:    ", allsums)
 }
 
 type antenna struct {
@@ -595,8 +676,6 @@ func findAllAntennas(data []string, marker rune) []antenna {
 
 		}
 	}
-	/* fmt.Printf("For marker: %c\n", marker)
-	fmt.Println("Antennas: ", allAntennas) */
 
 	antiNodes := make([]antenna, 0)
 	for index, v := range allAntennas {
@@ -611,7 +690,15 @@ func getAllAntiNodes(start antenna, rest []antenna, antiNodes *[]antenna) {
 	if len(rest) == 0 {
 		return
 	}
-	*antiNodes = append(*antiNodes, calculateAntiNode(start, rest[0]))
+	if len(rest) == 2 {
+		*antiNodes = append(*antiNodes, start)
+	}
+	antiNode := calculateAntiNode(start, rest[0])
+	*antiNodes = append(*antiNodes, antiNode)
+	// TODO parse width length dynamically
+	if start.x <= 50 && start.y <= 50 && start.y >= 0 && start.x >= 0 {
+		getAllAntiNodes(rest[0], []antenna{antiNode}, antiNodes)
+	}
 	getAllAntiNodes(start, rest[1:], antiNodes)
 }
 
