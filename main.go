@@ -574,67 +574,48 @@ func day8() {
 func day9() {
 	data := ParseInputData("data/d9.txt")
 
+	allsumsPart1 := 0
 	allsums := 0
-	block := ""
 	blockSlices := make([]string, 0)
 	input := strings.Split(data[0], "")
 	for index, v := range input {
 		num, _ := strconv.Atoi(v)
 		if index%2 == 1 {
 			blockSlices = append(blockSlices, slices.Repeat([]string{"."}, num)...)
-
-			block += strings.Join(slices.Repeat([]string{"."}, num), "")
 		} else {
 			blockSlices = append(blockSlices, slices.Repeat([]string{strconv.Itoa(index / 2)}, num)...)
-			block += strings.Join(slices.Repeat([]string{strconv.Itoa(index / 2)}, num), "")
 		}
 	}
 
-	//fmt.Println(blockSlices)
-	//blocks := strings.Split(block, "")
-	reversed := slices.Clone(blockSlices)
-	slices.Reverse(reversed)
-	//var final string
 	final := make([]string, 0)
-	filtered := slices.DeleteFunc(reversed, func(s string) bool {
-		return s == "."
-	})
-	moveblocks(blockSlices, filtered, &final)
-	//strs := strings.Split(final, "")
-	//fmt.Println(final)
+	moveblocks(blockSlices, &final)
 	for index, v := range final {
 		val, _ := strconv.Atoi(v)
-		allsums += index * val
-		//fmt.Printf("%d * %d\n", index, val)
+		allsumsPart1 += index * val
 	}
-	fmt.Println("Day 8 Part 1:    ", allsums)
+	fmt.Println("Day 8 Part 1:    ", allsumsPart1)
 	fmt.Println("Day 8 Part 2:    ", allsums)
 }
 
-func moveblocks(block, reversed []string, final *[]string) {
-	/* 	emptySlot := slices.IndexFunc(block, func(str string) bool {
-		return str == "."
-	}) */
-	/* 	fmt.Println("b", block)
-	   	fmt.Println("r", reversed)
-	   	fmt.Println(*final) */
+func moveblocks(block []string, final *[]string) {
 	emptySlot := FindEmptyFunc(block)
-	if emptySlot == -1 || len(block) == 1 {
-		if block[0] != "." {
-			*final = append(*final, block[0])
-			//*final += block[0]
-		}
+	if emptySlot == -1 {
+		*final = append(*final, block...)
 		return
 	}
 	if emptySlot > 0 {
 		*final = append(*final, block[0:emptySlot]...)
-		//*final += strings.Join(block[0:emptySlot], "")
-		moveblocks(block[emptySlot:], reversed, final)
+		moveblocks(block[emptySlot:], final)
 		return
+	} else {
+		for a, b := range slices.Backward(block) {
+			if b != "." {
+				*final = append(*final, block[a])
+				moveblocks(block[emptySlot+1:a], final)
+				break
+			}
+		}
 	}
-	*final = append(*final, reversed[0])
-	//*final += reversed[0]
-	moveblocks(block[emptySlot+1:len(block)-1], reversed[1:], final)
 }
 
 func FindEmptyFunc(strs []string) int {
