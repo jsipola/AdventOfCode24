@@ -40,3 +40,7 @@ func TestDay8(t *testing.T) {
 func TestDay9(t *testing.T) {
 	day9()
 }
+
+func TestDay10(t *testing.T) {
+	day10()
+}
