@@ -31,46 +31,6 @@ func convertToInts(s string) []int {
 	return ints
 }
 
-func traverseMap(total [][]int, neighbours []coordinate, loc coordinate, foundNines map[coordinate]int) int {
-	sum := 0
-	for _, v := range neighbours {
-		if loc.value == 8 && v.value == 9 {
-			foundNines[v] = foundNines[v] + 1
-			sum++
-		}
-		if loc.value+1 == v.value && loc.value != 8 {
-			sum += traverseMap(total, getNeighbours(total, v), v, foundNines)
-		}
-	}
-	return sum
-}
-
-type coordinate struct {
-	x     int
-	y     int
-	value int
-}
-
-func getNeighbours(total [][]int, loc coordinate) []coordinate {
-	locs := make([]coordinate, 0)
-	direction := []int{-1, 1}
-	for _, v := range direction {
-		if loc.x+v >= len(total[0]) || loc.x+v < 0 {
-			continue
-		}
-		locs = append(locs, coordinate{x: loc.x + v, y: loc.y, value: total[loc.y][loc.x+v]})
-	}
-
-	for _, v := range direction {
-		if loc.y+v >= len(total) || loc.y+v < 0 {
-			continue
-		}
-		locs = append(locs, coordinate{x: loc.x, y: loc.y + v, value: total[loc.y+v][loc.x]})
-	}
-
-	return locs
-}
-
 func moveblocks(block []string, final *[]string) {
 	emptySlot := FindEmptyFunc(block)
 	if emptySlot == -1 {
@@ -477,7 +437,6 @@ func ParseInputData(inputFile string) []string {
 	if error != nil {
 		log.Fatal(error)
 	}
-
 	inputData := strings.Split(string(data[:]), "\r\n")
 	return inputData
 }

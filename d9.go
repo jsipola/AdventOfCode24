@@ -29,6 +29,6 @@ func day9() {
 		val, _ := strconv.Atoi(v)
 		allsumsPart1 += index * val
 	}
-	fmt.Println("Day 8 Part 1:    ", allsumsPart1)
-	fmt.Println("Day 8 Part 2:    ", allsums)
+	fmt.Println("Day 9 Part 1:    ", allsumsPart1)
+	fmt.Println("Day 9 Part 2:    ", allsums)
 }
